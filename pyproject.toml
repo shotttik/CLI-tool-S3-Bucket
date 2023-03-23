@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "poetry-week3"
+version = "0.1.0"
+description = ""
+authors = ["shotttik <shota.akhlouri@gmail.com>"]
+readme = "README.md"
+packages = [{include = "poetry_week3"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+python-dotenv = "^1.0.0"
+argparse = "^1.4.0"
+python-magic = "^0.4.27"
+libmagic = "^1.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
