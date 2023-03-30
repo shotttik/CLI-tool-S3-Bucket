@@ -18,9 +18,15 @@ LOGGER = CustomLogger.get_logger(__name__)
 class Object_Crud:
 
     @staticmethod
-    def get_objects(s3_client) -> str:
+    def get_objects(s3_client):
         for key in s3_client.client.list_objects(Bucket=s3_client.bucket_name)['Contents']:
             print(f" {key['Key']}, size: {key['Size']}")
+
+    @staticmethod
+    def delete_object(s3_client, filename: str):
+        s3_client.client.delete_object(
+            Bucket=s3_client.bucket_name, Key=filename)
+        LOGGER.info("Deletet object " + filename + " Successfully")
 
     @staticmethod
     def download_file_and_upload_to_s3(s3_client, url, file_name="", keep_local=False):
@@ -72,6 +78,7 @@ class Object_Crud:
         )
 
     # მცირე ზომის ფაილების ატვირთვა
+
     @staticmethod
     def upload_file(s3_client, file_name):
         response = s3_client.client.upload_file(

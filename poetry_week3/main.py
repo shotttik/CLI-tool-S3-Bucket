@@ -32,54 +32,52 @@ def main(command_line=None):
     group.add_argument('--showPolicy', action='store_true')
     group.add_argument("-arp",
                        "--assign_read_policy",
+                       action='store_true',
+                       dest="assign_read_policy",
                        help="flag to assign read bucket policy.",
-                       choices=[
-                            "False", "True"],
-                       type=str,
-                       nargs="?",
-                       const="True",
-                       default="False")
+                       )
 
     group.add_argument("-amp",
                        "--assign_missing_policy",
+                       action='store_true',
+                       dest="assign_missing_policy",
                        help="flag to assign read bucket policy.",
-                       choices=["False", "True"],
-                       type=str,
-                       nargs="?",
-                       const="True",
-                       default="False")
+                       )
 
     group.add_argument("-lo",
                        "--list_objects",
-                       type=str,
+                       action='store_true',
+                       dest="list_objects",
                        help="list bucket object",
-                       nargs="?",
-                       const="True",
-                       default="False")
+                       )
 
     group.add_argument("-ufd",
                        "--upload_file_dir",
-                       type=str,
+                       action='store_true',
+                       dest="upload_file_dir",
                        help="Upload file from directory",
-                       nargs="?",
-                       const="True",
-                       default="False")
+                       )
 
     group.add_argument("-mu",
                        "--multipart_upload",
-                       type=str,
+                       action='store_true',
+                       dest="multipart_upload",
                        help="Upload big file from directory, multipart upload.",
-                       nargs="?",
-                       const="True",
-                       default="False")
+
+                       )
 
     group.add_argument("-plp",
                        "--put_lifecycle_policy",
-                       type=str,
+                       action='store_true',
+                       dest="put_lifecycle_policy",
                        help="configuration of lifecicly, delete after 120 days.",
-                       nargs="?",
-                       const="True",
-                       default="False")
+                       )
+
+    group.add_argument("-del",
+                       "--delete_object",
+                       action='store_true',
+                       dest="delete_object",
+                       help="delete object file")
 
     group.add_argument('-makePublic', '-mp', '--makePublic',  action='store_true',
                        help="make Public(read) file", dest="makePublic")
@@ -109,13 +107,13 @@ def main(command_line=None):
             Bucket_Policy.read_bucket_policy(s3_client)
         if args.deleteBucket:
             Bucket_Crud.delete_bucket(s3_client)
-        if args.assign_read_policy == "True":
+        if args.assign_read_policy:
             Bucket_Policy.assign_policy(
                 s3_client, "public_read_policy")
-        if args.assign_missing_policy == "True":
+        if args.assign_missing_policy:
             Bucket_Policy.assign_policy(
                 s3_client, "multiple_policy")
-        if args.list_objects == "True":
+        if args.list_objects:
             Object_Crud.get_objects(s3_client)
 
         if args.upload_file_dir:
@@ -130,6 +128,9 @@ def main(command_line=None):
         if args.put_lifecycle_policy:
             Object_Policy.put_lifecycle_policy(s3_client)
 
+        if args.delete_object and args.filename:
+            Object_Crud.delete_object(s3_client, args.filename)
+
         if args.uploadFile:
             file_name = ""
             if args.filename:
@@ -141,4 +142,7 @@ def main(command_line=None):
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        LOGGER.error(e)
