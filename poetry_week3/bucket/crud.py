@@ -1,30 +1,32 @@
-import logging
 from botocore.exceptions import ClientError
 from client import Client
+from poetry_week3.logger import CustomLogger
+
+LOGGER = CustomLogger.get_logger(__name__)
 
 
 class Bucket_Crud:
     @staticmethod
-    def buckets() -> list | bool:
+    def buckets(s3_client) -> list | bool:
         try:
-            return Client().getInstance().list_buckets()["Buckets"]
+            return s3_client.client.list_buckets()["Buckets"]
         except ClientError as e:
-            logging.error(e)
+            LOGGER.error(e)
             return False
 
     @classmethod
-    def create_bucket(cls, region="us-west-2") -> bool:
-        if cls.__bucket_exists:
-            logging.error("bucket already exists.")
+    def create_bucket(cls, s3_client, region="us-west-2") -> bool:
+        if cls.__bucket_exists(s3_client):
+            LOGGER.error("bucket already exists.")
             return False
         try:
             location = {"LocationConstraint": region}
-            response = Client().getInstance().create_bucket(
-                Bucket=Client().get_bucket_name(),
+            response = s3_client.client.create_bucket(
+                Bucket=s3_client.bucket_name,
                 CreateBucketConfiguration=location
             )
         except ClientError as e:
-            logging.error(e)
+            LOGGER.error(e)
             return False
         status_code = response["ResponseMetadata"]["HTTPStatusCode"]
         if status_code == 200:
@@ -33,28 +35,29 @@ class Bucket_Crud:
         return False
 
     @classmethod
-    def delete_bucket(cls) -> bool:
-        if cls.__bucket_exists() is False:
-            logging.error("bucket doesn't exists.")
+    def delete_bucket(cls, s3_client) -> bool:
+        if cls.__bucket_exists(s3_client.client) is False:
+            LOGGER.error("bucket doesn't exists.")
             return False
         try:
-            response = Client().getInstance().delete_bucket(
-                Bucket=Client().get_bucket_name())
+            response = s3_client.client.delete_bucket(
+                Bucket=s3_client.client)
         except ClientError as e:
-            logging.error(e)
+            LOGGER.error(e)
             return False
         status_code = response["ResponseMetadata"]["HTTPStatusCode"]
         if status_code == 200:
-            logging.INFO("bucker deleted successfully")
+            LOGGER.info("bucker deleted successfully")
             return True
         return False
 
     @staticmethod
-    def __bucket_exists() -> bool:
+    def __bucket_exists(s3_client) -> bool:
         try:
-            response = Client().getInstance().head_bucket(
-                Bucket=Client().get_bucket_name())
+            response = s3_client.client.head_bucket(
+                Bucket=s3_client.bucket_name)
         except ClientError as e:
+            LOGGER.info(e)
             return False
         status_code = response["ResponseMetadata"]["HTTPStatusCode"]
         if status_code == 200:

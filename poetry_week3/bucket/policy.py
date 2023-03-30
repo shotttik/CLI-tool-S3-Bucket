@@ -8,7 +8,7 @@ from poetry_week3.client import Client
 class Bucket_Policy:
 
     @staticmethod
-    def __generate_public_read_policy():
+    def __generate_public_read_policy(s3_client):
         policy = {
             "Version": "2012-10-17",
             "Statement": [
@@ -17,7 +17,7 @@ class Bucket_Policy:
                     "Effect": "Allow",
                     "Principal": "*",
                     "Action": "s3:GetObject",
-                    "Resource": f"arn:aws:s3:::{Client().get_bucket_name()}/*",
+                    "Resource": f"arn:aws:s3:::{s3_client.bucket_name}/*",
                 }
             ],
         }
@@ -25,7 +25,7 @@ class Bucket_Policy:
         return json.dumps(policy)
 
     @staticmethod
-    def __generate_multiple_policy():
+    def __generate_multiple_policy(s3_client):
         policy = {
             "Version":
             "2012-10-17",
@@ -35,8 +35,8 @@ class Bucket_Policy:
                     "s3:DeleteObject"
                 ],
                 "Resource":
-                [f"arn:aws:s3:::{Client().get_bucket_name()}",
-                 f"arn:aws:s3:::{Client().get_bucket_name()}/*"],
+                [f"arn:aws:s3:::{s3_client.bucket_name}",
+                 f"arn:aws:s3:::{s3_client.bucket_name}/*"],
                 "Effect":
                 "Allow",
                 "Principal":
@@ -47,25 +47,25 @@ class Bucket_Policy:
         return json.dumps(policy)
 
     @classmethod
-    def assign_policy(cls, policy_function):
+    def assign_policy(cls, s3_client, policy_function):
         policy = None
         if policy_function == "public_read_policy":
-            policy = cls.__generate_public_read_policy()
+            policy = cls.__generate_public_read_policy(s3_client)
         elif policy_function == "multiple_policy":
-            policy = cls.__generate_multiple_policy()
+            policy = cls.__generate_multiple_policy(s3_client)
 
         if (not policy):
             print('please provide policy')
             return
 
-        Client().getInstance().put_bucket_policy(
-            Bucket=Client().get_bucket_name(), Policy=policy)
+        s3_client.client.put_bucket_policy(
+            Bucket=s3_client.bucket_name, Policy=policy)
         print("Bucket multiple policy assigned successfully")
 
     @staticmethod
-    def read_bucket_policy():
-        policy = Client().getInstance().get_bucket_policy(
-            Bucket=Client().get_bucket_name())
+    def read_bucket_policy(s3_client):
+        policy = s3_client.client.get_bucket_policy(
+            Bucket=s3_client.bucket_name)
 
         status_code = policy["ResponseMetadata"]["HTTPStatusCode"]
         if status_code == 200:

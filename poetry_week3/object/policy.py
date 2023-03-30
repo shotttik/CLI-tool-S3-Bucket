@@ -5,11 +5,11 @@ from client import Client
 
 class Object_Policy:
     @staticmethod
-    def set_object_access_policy(file_name):
+    def set_object_access_policy(s3_client, file_name):
         try:
-            response = Client().getInstance().put_object_acl(
+            response = s3_client.client.put_object_acl(
                 ACL="public-read",
-                Bucket=Client().get_bucket_name().bucket_name,
+                Bucket=s3_client.bucket_name,
                 Key=file_name
             )
         except ClientError as e:

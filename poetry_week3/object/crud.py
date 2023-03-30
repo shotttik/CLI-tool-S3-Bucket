@@ -13,8 +13,14 @@ LOGGER = CustomLogger.get_logger(__name__)
 
 
 class Object_Crud:
+
     @staticmethod
-    def download_file_and_upload_to_s3(url, file_name="", keep_local=False):
+    def get_objects(s3_client) -> str:
+        for key in s3_client.client.list_objects(Bucket=s3_client.bucket_name)['Contents']:
+            print(f" {key['Key']}, size: {key['Size']}")
+
+    @staticmethod
+    def download_file_and_upload_to_s3(s3_client, url, file_name="", keep_local=False):
 
         with urlopen(url) as response:
             content = response.read()
@@ -42,9 +48,9 @@ class Object_Crud:
                 if '.' not in file_name:
                     file_name += "." + type_format
 
-                Client().getInstance().upload_fileobj(
+                s3_client.client.upload_fileobj(
                     Fileobj=io.BytesIO(content),
-                    Bucket=Client().get_bucket_name(),
+                    Bucket=s3_client.bucket_name,
                     ExtraArgs={'ContentType': mime_type},
                     Key=file_name
                 )
@@ -58,6 +64,6 @@ class Object_Crud:
         # public URL
         return "https://s3-{0}.amazonaws.com/{1}/{2}".format(
             'us-west-2',
-            Client().get_bucket_name(),
+            s3_client.bucket_name,
             file_name
         )

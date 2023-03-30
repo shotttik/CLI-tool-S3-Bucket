@@ -47,6 +47,14 @@ def main(command_line=None):
                        const="True",
                        default="False")
 
+    group.add_argument("-lo",
+                       "--list_objects",
+                       type=str,
+                       help="list bucket object",
+                       nargs="?",
+                       const="True",
+                       default="False")
+
     group.add_argument('-makePublic', '-mp', '--makePublic',  action='store_true',
                        help="make Public(read) file", dest="makePublic")
     group.add_argument('--uploadFile', type=str,
@@ -60,7 +68,7 @@ def main(command_line=None):
 
     if args.showBuckets:
         s3_client = Client()
-        buckets = Bucket_Crud.buckets()
+        buckets = Bucket_Crud.buckets(s3_client)
         if buckets:
             for bucket in buckets:
                 print(f' {bucket["Name"]}')
@@ -68,11 +76,11 @@ def main(command_line=None):
     if args.command == 'bucket':
         s3_client = Client(args.name)
         if args.createBucket:
-            Bucket_Crud.create_bucket()
+            Bucket_Crud.create_bucket(s3_client)
         if args.showPolicy:
-            Bucket_Policy.read_bucket_policy()
+            Bucket_Policy.read_bucket_policy(s3_client)
         if args.deleteBucket:
-            Bucket_Crud.delete_bucket()
+            Bucket_Crud.delete_bucket(s3_client)
         if args.assign_read_policy == "True":
             Bucket_Policy.assign_policy(
                 s3_client, "public_read_policy")
@@ -80,15 +88,17 @@ def main(command_line=None):
         if args.assign_missing_policy == "True":
             Bucket_Policy.assign_policy(
                 s3_client, "multiple_policy")
+        if (args.list_objects == "True"):
+            Object_Crud.get_objects(s3_client)
 
         if args.uploadFile:
             file_name = ""
             if args.filename:
                 file_name = args.filename
             Object_Crud.download_file_and_upload_to_s3(
-                args.uploadFile, file_name, keep_local=args.save)
+                s3_client, args.uploadFile, file_name, keep_local=args.save)
         if args.makePublic and args.filename:
-            Object_Policy.set_object_access_policy(args.filename)
+            Object_Policy.set_object_access_policy(s3_client, args.filename)
 
 
 if __name__ == "__main__":
