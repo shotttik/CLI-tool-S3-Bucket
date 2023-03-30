@@ -16,7 +16,7 @@ class Bucket_Crud:
 
     @classmethod
     def create_bucket(cls, s3_client, region="us-west-2") -> bool:
-        if cls.__bucket_exists(s3_client):
+        if cls.bucket_exists(s3_client):
             LOGGER.error("bucket already exists.")
             return False
         try:
@@ -36,7 +36,7 @@ class Bucket_Crud:
 
     @classmethod
     def delete_bucket(cls, s3_client) -> bool:
-        if cls.__bucket_exists(s3_client.client) is False:
+        if cls.bucket_exists(s3_client) is False:
             LOGGER.error("bucket doesn't exists.")
             return False
         try:
@@ -52,12 +52,12 @@ class Bucket_Crud:
         return False
 
     @staticmethod
-    def __bucket_exists(s3_client) -> bool:
+    def bucket_exists(s3_client) -> bool:
         try:
             response = s3_client.client.head_bucket(
                 Bucket=s3_client.bucket_name)
         except ClientError as e:
-            LOGGER.info(e)
+            LOGGER.error(e)
             return False
         status_code = response["ResponseMetadata"]["HTTPStatusCode"]
         if status_code == 200:

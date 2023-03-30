@@ -6,6 +6,9 @@ from os import getenv
 from urllib.request import urlopen
 import io
 import magic
+import os
+import boto3
+from botocore.config import Config
 
 from poetry_week3.logger import CustomLogger
 
@@ -67,3 +70,59 @@ class Object_Crud:
             s3_client.bucket_name,
             file_name
         )
+
+    # მცირე ზომის ფაილების ატვირთვა
+    @staticmethod
+    def upload_file(s3_client, file_name):
+        response = s3_client.client.upload_file(
+            file_name, s3_client.bucket_name, 'hello.txt')
+        status_code = response["ResponseMetadata"]["HTTPStatusCode"]
+        if status_code == 200:
+            LOGGER.info("uploaded successfully.")
+            return True
+        LOGGER.error("upload failed.")
+        return False
+
+    # დიდი ზომის ფაილების ატვირთვა
+    @staticmethod
+    def multipart_upload(s3_client, filename, key, PART_BYTES=1024 * 10):
+        mpu = s3_client.client.create_multipart_upload(
+            Bucket=s3_client.bucket_name, Key=key)
+        mpu_id = mpu["UploadID"]
+
+        parts = []
+        uploaded_bytes = 0
+        total_bytes = os.stat(filename).st_size
+
+        with open(filename, "rb") as f:
+            i = 1
+            while uploaded_bytes != total_bytes:
+                data = f.read(PART_BYTES)
+                part = s3_client.client.upload_part(Body=data, Bucket=s3_client.bucket_name, Key=key, UploadId=mpu_id,
+                                                    PartNumber=i)
+                parts.append({"PartNumber": i, "ETag": part["ETag"]})
+                uploaded_bytes += len(data)
+                print("{0} of {1} uploaded".format(
+                    uploaded_bytes, total_bytes))
+                i += 1
+        result = s3_client.complete_multipart_upload(
+            Bucket=s3_client.bucket_name, Key=key, UploadId=mpu_id, MultipartUpload={
+                "Parts": parts}
+        )
+        LOGGER.info(result)
+        return result
+
+
+'''
+    @staticmethod
+    def upload_file_obj(s3_client, filename):
+        with open(filename, "rb") as file:
+            s3_client.client.upload_fileobj(file, "hello_obj.txt")
+
+    @staticmethod
+    def upload_file_put(s3_client, filename):
+        with open(filename, "rb") as file:
+            s3_client.client.put_object(Bucket=s3_client.bucket_name,
+                                        Key="hello_put.txt",
+                                        Body=file.read())
+'''

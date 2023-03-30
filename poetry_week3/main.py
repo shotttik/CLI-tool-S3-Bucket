@@ -6,7 +6,9 @@ from poetry_week3.client import Client
 from poetry_week3.object.crud import Object_Crud
 from poetry_week3.object.policy import Object_Policy
 
+from poetry_week3.logger import CustomLogger
 
+LOGGER = CustomLogger.get_logger(__name__)
 load_dotenv()
 
 
@@ -55,10 +57,36 @@ def main(command_line=None):
                        const="True",
                        default="False")
 
+    group.add_argument("-ufd",
+                       "--upload_file_dir",
+                       type=str,
+                       help="Upload file from directory",
+                       nargs="?",
+                       const="True",
+                       default="False")
+
+    group.add_argument("-mu",
+                       "--multipart_upload",
+                       type=str,
+                       help="Upload big file from directory, multipart upload.",
+                       nargs="?",
+                       const="True",
+                       default="False")
+
+    group.add_argument("-plp",
+                       "--put_lifecycle_policy",
+                       type=str,
+                       help="configuration of lifecicly, delete after 120 days.",
+                       nargs="?",
+                       const="True",
+                       default="False")
+
     group.add_argument('-makePublic', '-mp', '--makePublic',  action='store_true',
                        help="make Public(read) file", dest="makePublic")
     group.add_argument('--uploadFile', type=str,
                        help="Enter file url.",)
+    bucket.add_argument('--key', type=str,
+                        help="Enter key for uploading multipart. big files.!")
     bucket.add_argument('--filename', type=str,
                         help="Enter File name format for uploading.")
     bucket.add_argument('-save', '-s', '--save',  action='store_true',
@@ -84,12 +112,23 @@ def main(command_line=None):
         if args.assign_read_policy == "True":
             Bucket_Policy.assign_policy(
                 s3_client, "public_read_policy")
-
         if args.assign_missing_policy == "True":
             Bucket_Policy.assign_policy(
                 s3_client, "multiple_policy")
-        if (args.list_objects == "True"):
+        if args.list_objects == "True":
             Object_Crud.get_objects(s3_client)
+
+        if args.upload_file_dir:
+            if args.filename:
+                Object_Crud.upload_file(s3_client, args.filename)
+
+        if args.multipart_upload:
+            if args.filename and args.key:
+                Object_Crud.multipart_upload(
+                    s3_client, args.filename, args.key)
+
+        if args.put_lifecycle_policy:
+            Object_Policy.put_lifecycle_policy(s3_client)
 
         if args.uploadFile:
             file_name = ""
