@@ -1,25 +1,21 @@
-from hashlib import md5
-from time import localtime
 import boto3
 from os import getenv
 from dotenv import load_dotenv
-import logging
 from botocore.exceptions import ClientError
-import json
 import sys
 from urllib.request import urlopen
-import io
-import magic
+from poetry_week3.logger import CustomLogger
 
+LOGGER = CustomLogger.get_logger(__name__)
 load_dotenv()
 
 
-class Client(object):
+class Client():
     _instance = None
 
     def __new__(cls, bucket_name=""):
         if cls._instance is None:
-            print('Creating the object')
+            LOGGER.info('Creating the object')
             cls._instance = super(Client, cls).__new__(cls)
             try:
                 cls.client = boto3.client(
@@ -31,11 +27,13 @@ class Client(object):
                 )
                 cls.bucket_name: str = bucket_name
                 cls.client.list_buckets()["Buckets"]
+                LOGGER.info('object Created Successfully')
+
             except ClientError as e:
-                logging.error(e)
+                LOGGER.error(e)
                 sys.exit()
             except Exception:
-                logging.error("Unexpected error")
+                LOGGER.error("Unexpected error")
                 sys.exit()
         return cls._instance
 

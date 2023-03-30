@@ -1,13 +1,15 @@
-import logging
 from botocore.exceptions import ClientError
 from client import Client
 from hashlib import md5
 from time import localtime
 from os import getenv
-import logging
 from urllib.request import urlopen
 import io
 import magic
+
+from poetry_week3.logger import CustomLogger
+
+LOGGER = CustomLogger.get_logger(__name__)
 
 
 class Object_Crud:
@@ -27,7 +29,7 @@ class Object_Crud:
                 mime_type = magic.from_buffer(content, mime=True)
                 type_format = mime_type.split("/")[1]
                 if mime_type not in allowed_files:
-                    logging.error("Invalid file type.")
+                    LOGGER.error("Invalid file type.")
                     return False
 
                 if file_name == "":
@@ -47,7 +49,7 @@ class Object_Crud:
                     Key=file_name
                 )
             except Exception as e:
-                logging.error(e)
+                LOGGER.error(e)
 
         if keep_local:
             with open('resources/'+file_name, mode='wb') as jpg_file:
