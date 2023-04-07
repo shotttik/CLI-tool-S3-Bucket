@@ -135,6 +135,16 @@ class Object_Crud:
                                                Key=version['Key'], VersionId=version['VersionId'])
                 LOGGER.info(f"Deleted versions of {prefix} older than 6 month")
 
+    @staticmethod
+    def upload_any_format_object(s3_client, file_path):
+        mime = magic.Magic(mime=True)
+        # Determine the MIME type of the file
+        mime_type = mime.from_file(file_path)
+
+        with open(file_path, 'rb') as f:
+            s3_client.client.upload_fileobj(f, s3_client.bucket_name, file_path,
+                                            ExtraArgs={'ContentType': mime_type})
+
 
 '''
     @staticmethod

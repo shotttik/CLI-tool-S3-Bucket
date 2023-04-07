@@ -83,14 +83,18 @@ def main(command_line=None):
                        help="make Public(read) file", dest="makePublic")
     group.add_argument('--uploadFile', type=str,
                        help="Enter file url.",)
+    group.add_argument('--deleteVersions', '-dv', '-deleteVersions', action='store_true',
+                       help='delete oject versions older than 6 motnh', dest='deleteVersions')
+    group.add_argument('--uploadany', '-up', '-uploadany', action='store_true',
+                       help='delete oject versions older than 6 motnh', dest='uploadany')
     bucket.add_argument('--key', type=str,
                         help="Enter key for uploading multipart. big files.!")
-    bucket.add_argument('--deleteVersions', '-dv', '-deleteVersions', action='store_true',
-                        help='delete oject versions older than 6 motnh', dest='deleteVersions')
     bucket.add_argument('--filename', type=str,
-                        help="Enter File name format for uploading.")
+                        help="Enter File name for uploading.")
+    bucket.add_argument('--filepath', '-path', '-fp', dest='filepath', type=str,
+                        help="Enter File path for uploading any format files.")
     bucket.add_argument('--prefix', '-prefix', '-pr', dest='prefix', type=str,
-                        help="Enter File name format for uploading.")
+                        help="Enter prefix/filename/foldername for deleting versions.")
 
     bucket.add_argument('-save', '-s', '--save',  action='store_true',
                         help="Keep/Save local when uploading image", dest="save")
@@ -146,6 +150,9 @@ def main(command_line=None):
         if args.deleteVersions and args.prefix:
             Object_Crud.delete_file_versions_older_6_month(
                 s3_client, args.prefix)
+        if args.uploadany and args.filepath:
+            Object_Crud.upload_any_format_object(s3_client, args.filepath)
+
         if args.makePublic and args.filename:
             Object_Policy.set_object_access_policy(s3_client, args.filename)
 
