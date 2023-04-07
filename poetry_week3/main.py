@@ -85,8 +85,13 @@ def main(command_line=None):
                        help="Enter file url.",)
     bucket.add_argument('--key', type=str,
                         help="Enter key for uploading multipart. big files.!")
+    bucket.add_argument('--deleteVersions', '-dv', '-deleteVersions', action='store_true',
+                        help='delete oject versions older than 6 motnh', dest='deleteVersions')
     bucket.add_argument('--filename', type=str,
                         help="Enter File name format for uploading.")
+    bucket.add_argument('--prefix', '-prefix', '-pr', dest='prefix', type=str,
+                        help="Enter File name format for uploading.")
+
     bucket.add_argument('-save', '-s', '--save',  action='store_true',
                         help="Keep/Save local when uploading image", dest="save")
 
@@ -137,6 +142,10 @@ def main(command_line=None):
                 file_name = args.filename
             Object_Crud.download_file_and_upload_to_s3(
                 s3_client, args.uploadFile, file_name, keep_local=args.save)
+
+        if args.deleteVersions and args.prefix:
+            Object_Crud.delete_file_versions_older_6_month(
+                s3_client, args.prefix)
         if args.makePublic and args.filename:
             Object_Policy.set_object_access_policy(s3_client, args.filename)
 

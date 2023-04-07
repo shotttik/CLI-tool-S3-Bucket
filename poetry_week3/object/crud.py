@@ -1,3 +1,4 @@
+import datetime
 from botocore.exceptions import ClientError
 from client import Client
 from hashlib import md5
@@ -118,6 +119,21 @@ class Object_Crud:
         )
         LOGGER.info(result)
         return result
+
+    @staticmethod
+    def delete_file_versions_older_6_month(s3_client, prefix):
+        versions = s3_client.client.list_object_versions(
+            Bucket=s3_client.bucket_name, Prefix=prefix)
+
+        cutoff_date = datetime.datetime.now() - datetime.timedelta(days=180)
+
+        for version in versions['Versions']:
+            last_modified = version['LastModified']
+
+            if last_modified < cutoff_date:
+                s3_client.client.delete_object(Bucket=s3_client.bucket_name,
+                                               Key=version['Key'], VersionId=version['VersionId'])
+                LOGGER.info(f"Deleted versions of {prefix} older than 6 month")
 
 
 '''
