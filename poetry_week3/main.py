@@ -3,9 +3,10 @@ import argparse
 from poetry_week3.bucket.crud import Bucket_Crud
 from poetry_week3.bucket.policy import Bucket_Policy
 from poetry_week3.client import Client
+from poetry_week3.my_args import host_arguments
 from poetry_week3.object.crud import Object_Crud
 from poetry_week3.object.policy import Object_Policy
-
+from poetry_week3.host_static.host_web import Host
 from poetry_week3.logger import CustomLogger
 
 LOGGER = CustomLogger.get_logger(__name__)
@@ -21,6 +22,9 @@ def main(command_line=None):
     )
     subparsers = parser.add_subparsers(dest='command')
     bucket = subparsers.add_parser('bucket', help='work with bucket')
+    host = host_arguments(subparsers.add_parser(
+        "host", help="work with host/ing"))
+
     bucket.add_argument(
         '--name',
         type=str, help="Enter Bucket Name", required=True
@@ -155,6 +159,10 @@ def main(command_line=None):
 
         if args.makePublic and args.filename:
             Object_Policy.set_object_access_policy(s3_client, args.filename)
+    if args.command == 'host':
+        s3_client = Client(args.bucket_name)
+        if args.source:
+            Host.host_website(s3_client, args.source)
 
 
 if __name__ == "__main__":
