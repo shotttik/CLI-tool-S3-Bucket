@@ -3,11 +3,12 @@ import argparse
 from poetry_week3.bucket.crud import Bucket_Crud
 from poetry_week3.bucket.policy import Bucket_Policy
 from poetry_week3.client import Client
-from poetry_week3.my_args import host_arguments
+from poetry_week3.my_args import host_arguments, vpc_arguments
 from poetry_week3.object.crud import Object_Crud
 from poetry_week3.object.policy import Object_Policy
 from poetry_week3.host_static.host_web import Host
 from poetry_week3.logger import CustomLogger
+from poetry_week3.vpc.crud import Vpc_Crud
 
 LOGGER = CustomLogger.get_logger(__name__)
 load_dotenv()
@@ -24,6 +25,9 @@ def main(command_line=None):
     bucket = subparsers.add_parser('bucket', help='work with bucket')
     host = host_arguments(subparsers.add_parser(
         "host", help="work with host/ing"))
+
+    vpc = vpc_arguments(subparsers.add_parser(
+        "vpc", help="work with vpc"))
 
     bucket.add_argument(
         '--name',
@@ -163,6 +167,10 @@ def main(command_line=None):
         s3_client = Client(args.bucket_name)
         if args.source:
             Host.host_website(s3_client, args.source)
+    if args.command == 'vpc':
+        s3_client = Client(args.bucket_name)
+        if args.tag:
+            Vpc_Crud.self_create(s3_client, args.tag)
 
 
 if __name__ == "__main__":
