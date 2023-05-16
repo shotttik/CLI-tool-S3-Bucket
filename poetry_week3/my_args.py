@@ -19,4 +19,10 @@ def vpc_arguments(parser):
                         help="tag vpc name",
                         default=None)
 
+    parser.add_argument("-quantity",
+                        "--quantity",
+                        type=str,
+                        help="quantity of public and private subnets",
+                        default=None)
+
     return parser

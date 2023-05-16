@@ -169,8 +169,10 @@ def main(command_line=None):
             Host.host_website(s3_client, args.source)
     if args.command == 'vpc':
         s3_client = Client(args.bucket_name)
-        if args.tag:
+        if args.tag and not args.quantity:
             Vpc_Crud.self_create(s3_client, args.tag)
+        if args.tag and args.quantity:
+            Vpc_Crud.full_self_create(s3_client, args.tag, int(args.quantity))
 
 
 if __name__ == "__main__":

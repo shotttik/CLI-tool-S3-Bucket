@@ -99,3 +99,9 @@ Create VPC with IGW
 ```shell
 python poetry_week3/main.py vpc create -tag btuvpc
 ```
+
+Create VPC with IGW, Public and Private subnets specified quantity.
+
+```shell
+python poetry_week3/main.py vpc create -tag btuvpc -quantity 20
+```
