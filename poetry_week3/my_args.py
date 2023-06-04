@@ -26,3 +26,21 @@ def vpc_arguments(parser):
                         default=None)
 
     return parser
+
+
+def instance_arguments(parser):
+    parser.add_argument('create', type=str, help="create instance.")
+
+    parser.add_argument("-vpcid",
+                        "--vpcid",
+                        type=str,
+                        help="give vpc id",
+                        default=None)
+
+    parser.add_argument("-subnetid",
+                        "--subnetid",
+                        type=str,
+                        help="give subnet id",
+                        default=None)
+
+    return parser

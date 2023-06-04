@@ -1,9 +1,11 @@
+import time
 from dotenv import load_dotenv
 import argparse
 from poetry_week3.bucket.crud import Bucket_Crud
 from poetry_week3.bucket.policy import Bucket_Policy
 from poetry_week3.client import Client
-from poetry_week3.my_args import host_arguments, vpc_arguments
+from poetry_week3.instance.crud import EC2_Crud
+from poetry_week3.my_args import host_arguments, instance_arguments, vpc_arguments
 from poetry_week3.object.crud import Object_Crud
 from poetry_week3.object.policy import Object_Policy
 from poetry_week3.host_static.host_web import Host
@@ -28,6 +30,9 @@ def main(command_line=None):
 
     vpc = vpc_arguments(subparsers.add_parser(
         "vpc", help="work with vpc"))
+
+    instance = instance_arguments(subparsers.add_parser(
+        "instance", help="work with instance/vpc"))
 
     bucket.add_argument(
         '--name',
@@ -173,6 +178,23 @@ def main(command_line=None):
             Vpc_Crud.self_create(s3_client, args.tag)
         if args.tag and args.quantity:
             Vpc_Crud.full_self_create(s3_client, args.tag, int(args.quantity))
+    if args.command == "instance":
+        if args.vpcid and args.subnetid:
+            s3_client = Client()
+            security_group_id = Vpc_Crud.create_security_group(s3_client,
+                                                               "ec2-sg", "Security group to enable access on ec2", args.vpcid)
+            Vpc_Crud.open_http_traffic_from_all_ip(
+                s3_client, security_group_id)
+            local_ip = Vpc_Crud.get_my_public_ip()
+            Vpc_Crud.authorize_inbound_shh_traffic(
+                s3_client, security_group_id, local_ip)
+            instance_id = EC2_Crud.run_ec2(security_group_id, args.subnetid,
+                                           'btu-custom-instance')
+            time.sleep(10)
+            public_ip = EC2_Crud.assing_public_ip_to_instance(
+                s3_client, instance_id)
+            time.sleep(5)
+            EC2_Crud.check_accessibility_of_the_instance(public_ip)
 
 
 if __name__ == "__main__":
