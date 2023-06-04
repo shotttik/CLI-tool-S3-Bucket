@@ -106,14 +106,10 @@ Create VPC with IGW, Public and Private subnets specified quantity.
 python poetry_week3/main.py vpc create -tag btuvpc -quantity 20
 ```
 
-```shell
-python poetry_week3/main.py vpc instance -tag btuvpc -quantity 20
-```
-
 ## Instance
 
 Create instance
 
 ```shell
-python poetry_week3/main.py vpc instance -tag btuvpc -quantity 20
+python poetry_week3/main.py instance create -vpcid 12fd -subnetid 45ds
 ```
